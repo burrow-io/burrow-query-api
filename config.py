@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     db_port: int = 5432
 
     # Vector store configuration
-    table_name: str = "burrow_table"  # PGVectorStore adds "data_" prefix
+    table_name: str = "burrow_table_hybrid"  # PGVectorStore adds "data_" prefix
     embed_dim: int = 1024  # Amazon Titan default dimension
 
     # AWS Bedrock configuration

@@ -30,7 +30,7 @@ class VectorStoreManager:
             # Set global embedding model for LlamaIndex
             LlamaSettings.embed_model = self.embed_model
 
-            # Connect to existing vector store
+            # Connect to existing vector store with hybrid search enabled
             logger.info(f"Connecting to vector store table: {settings.table_name}")
             self.vector_store = PGVectorStore.from_params(
                 database=settings.db_name,
@@ -41,6 +41,8 @@ class VectorStoreManager:
                 table_name=settings.table_name,
                 embed_dim=settings.embed_dim,
                 schema_name="public",
+                hybrid_search=True,
+                text_search_config="english",
             )
 
             # Create index from existing vector store (no document loading needed)
@@ -55,13 +57,14 @@ class VectorStoreManager:
             logger.error(f"Failed to initialize vector store: {e}")
             raise
 
-    def get_retriever(self, similarity_top_k: int = 5, filters=None):
+    def get_retriever(self, similarity_top_k: int = 5, filters=None, mode: str = "default"):
         """
         Get a retriever for querying the vector store.
 
         Args:
             similarity_top_k: Number of top similar results to return
             filters: Optional metadata filters
+            mode: Search mode - "default" (vector), "hybrid", or "sparse" (keyword)
 
         Returns:
             VectorIndexRetriever instance
@@ -69,18 +72,28 @@ class VectorStoreManager:
         if not self.index:
             raise RuntimeError("Vector store not initialized. Call initialize() first.")
 
-        return self.index.as_retriever(
-            similarity_top_k=similarity_top_k,
-            filters=filters,
-        )
+        kwargs = {
+            "similarity_top_k": similarity_top_k,
+            "filters": filters,
+        }
 
-    def get_query_engine(self, similarity_top_k: int = 5, filters=None):
+        if mode == "hybrid":
+            kwargs["vector_store_query_mode"] = "hybrid"
+            kwargs["sparse_top_k"] = similarity_top_k
+        elif mode == "sparse":
+            kwargs["vector_store_query_mode"] = "sparse"
+            kwargs["sparse_top_k"] = similarity_top_k
+
+        return self.index.as_retriever(**kwargs)
+
+    def get_query_engine(self, similarity_top_k: int = 5, filters=None, mode: str = "default"):
         """
         Get a query engine for RAG-style queries.
 
         Args:
             similarity_top_k: Number of top similar results to return
             filters: Optional metadata filters
+            mode: Search mode - "default" (vector), "hybrid", or "sparse" (keyword)
 
         Returns:
             Query engine instance
@@ -88,10 +101,19 @@ class VectorStoreManager:
         if not self.index:
             raise RuntimeError("Vector store not initialized. Call initialize() first.")
 
-        return self.index.as_query_engine(
-            similarity_top_k=similarity_top_k,
-            filters=filters,
-        )
+        kwargs = {
+            "similarity_top_k": similarity_top_k,
+            "filters": filters,
+        }
+
+        if mode == "hybrid":
+            kwargs["vector_store_query_mode"] = "hybrid"
+            kwargs["sparse_top_k"] = similarity_top_k
+        elif mode == "sparse":
+            kwargs["vector_store_query_mode"] = "sparse"
+            kwargs["sparse_top_k"] = similarity_top_k
+
+        return self.index.as_query_engine(**kwargs)
 
 
 # Global vector store manager instance

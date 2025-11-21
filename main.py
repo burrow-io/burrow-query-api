@@ -135,27 +135,34 @@ async def health_check():
 @app.post("/retrieve", response_model=RetrieveResponse, tags=["Retrieval"])
 async def retrieve(request: RetrieveRequest):
     """
-    Retrieve top-K most similar documents without synthesis.
+    Retrieve top-K most similar documents.
 
-    This endpoint performs pure vector similarity search and returns
-    the most relevant document chunks with their scores and metadata.
+    Supports three search modes:
+    - **vector**: Pure vector similarity search (default)
+    - **keyword**: Text/keyword search using PostgreSQL full-text search
+    - **hybrid**: Combined vector + keyword search for best results
 
     Args:
-        request: RetrieveRequest with query, top_k, and optional filters
+        request: RetrieveRequest with query, top_k, mode, and optional filters
 
     Returns:
         RetrieveResponse with retrieved nodes
     """
     try:
-        logger.info(f"Retrieve request: query='{request.query[:50]}...', top_k={request.top_k}")
+        # Map search mode to internal mode
+        mode_map = {"vector": "default", "keyword": "sparse", "hybrid": "hybrid"}
+        internal_mode = mode_map.get(request.mode.value, "default")
+
+        logger.info(f"Retrieve request: query='{request.query[:50]}...', top_k={request.top_k}, mode={request.mode.value}")
 
         # Convert filters
         llama_filters = convert_filters(request.filters)
 
-        # Get retriever
+        # Get retriever with appropriate mode
         retriever = vector_store_manager.get_retriever(
             similarity_top_k=request.top_k,
             filters=llama_filters,
+            mode=internal_mode,
         )
 
         # Retrieve nodes
