@@ -10,8 +10,6 @@ logger = logging.getLogger(__name__)
 
 
 class BedrockCohereRerank:
-    """Reranker using Cohere's rerank model via AWS Bedrock."""
-
     def __init__(
         self,
         model_id: str = "cohere.rerank-v3-5:0",

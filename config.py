@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     bedrock_model_id: str = "amazon.titan-embed-text-v2:0"
 
     # API configuration
-    api_title: str = "RAGline Query API"
+    api_title: str = "Burrow Query API"
     api_version: str = "1.0.0"
     api_description: str = "Vector database query API for document retrieval"
 

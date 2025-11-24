@@ -97,7 +97,7 @@ def convert_filters(filters):
     )
 
 
-@app.get("/", tags=["Root"])
+@app.get("/query-service", tags=["Root"])
 async def root():
     """Root endpoint."""
     return {
@@ -107,7 +107,7 @@ async def root():
     }
 
 
-@app.get("/health", response_model=HealthResponse, tags=["Health"])
+@app.get("/query-service/health", response_model=HealthResponse, tags=["Health"])
 async def health_check():
     """
     Health check endpoint.
@@ -132,7 +132,7 @@ async def health_check():
         )
 
 
-@app.post("/retrieve", response_model=RetrieveResponse, tags=["Retrieval"])
+@app.post("/query-service/retrieve", response_model=RetrieveResponse, tags=["Retrieval"])
 async def retrieve(request: RetrieveRequest):
     """
     Retrieve top-K most similar documents.
@@ -212,7 +212,7 @@ async def retrieve(request: RetrieveRequest):
         )
 
 
-@app.post("/query", response_model=QueryResponse, tags=["Query"])
+@app.post("/query-service/query", response_model=QueryResponse, tags=["Query"])
 async def query(request: QueryRequest):
     """
     Query with RAG synthesis.
