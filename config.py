@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     # Database configuration
     db_name: str = "burrowdb"
     db_user: str = "burrow_admin"
-    db_password: str = ""
+    db_password: str = "dummy"
     db_host: str = "localhost"
     db_port: int = 5432
 
