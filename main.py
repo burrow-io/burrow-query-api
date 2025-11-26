@@ -57,6 +57,7 @@ app = FastAPI(
     version=settings.api_version,
     description=settings.api_description,
     lifespan=lifespan,
+    root_path="/query-service",  # Required for docs to work behind load balancer
 )
 
 # Add CORS middleware
@@ -101,7 +102,7 @@ def convert_filters(filters):
     )
 
 
-@app.get("/query-service", tags=["Root"])
+@app.get("/", tags=["Root"])
 async def root():
     """Root endpoint."""
     return {
@@ -111,7 +112,7 @@ async def root():
     }
 
 
-@app.get("/query-service/health", response_model=HealthResponse, tags=["Health"])
+@app.get("/health", response_model=HealthResponse, tags=["Health"])
 async def health_check():
     """
     Health check endpoint.
@@ -136,7 +137,7 @@ async def health_check():
         )
 
 
-@app.post("/query-service/retrieve", response_model=RetrieveResponse, tags=["Retrieval"], dependencies=[Depends(verify_api_token)])
+@app.post("/retrieve", response_model=RetrieveResponse, tags=["Retrieval"], dependencies=[Depends(verify_api_token)])
 async def retrieve(request: RetrieveRequest):
     """
     Retrieve top-K most similar documents.
@@ -216,7 +217,7 @@ async def retrieve(request: RetrieveRequest):
         )
 
 
-@app.post("/query-service/query", response_model=QueryResponse, tags=["Query"], dependencies=[Depends(verify_api_token)])
+@app.post("/query", response_model=QueryResponse, tags=["Query"], dependencies=[Depends(verify_api_token)])
 async def query(request: QueryRequest):
     """
     Query with RAG synthesis.
