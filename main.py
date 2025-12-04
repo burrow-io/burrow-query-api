@@ -18,6 +18,7 @@ from llama_index.core.vector_stores.types import (
 )
 from security import verify_api_token
 from logger import log_info, log_exception
+import time
 
 
 @asynccontextmanager
@@ -40,6 +41,26 @@ app = FastAPI(
     lifespan=lifespan,
     root_path="/query-service",
 )
+
+
+@app.middleware("http")
+async def log_http_requests(request, call_next):
+    start = time.time()
+
+    response = await call_next(request)
+
+    duration_ms = (time.time() - start) * 1000
+
+    log_info(
+        "HTTP request completed",
+        method=request.method,
+        path=request.url.path,
+        status_code=response.status_code,
+        duration_ms=duration_ms,
+    )
+
+    return response
+
 
 app.add_middleware(
     CORSMiddleware,
