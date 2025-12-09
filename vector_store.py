@@ -141,6 +141,7 @@ class VectorStoreManager:
 
         return self.index.as_query_engine(**kwargs)
 
+
     def rerank_nodes(self, nodes, query: str, top_n: int = 5):
         if not self.reranker:
             log_error(
