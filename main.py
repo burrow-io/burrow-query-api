@@ -10,7 +10,6 @@ from models import (
     QueryResponse,
     NodeResponse,
     HealthResponse,
-    SearchMode,
 )
 from llama_index.core.vector_stores.types import (
     MetadataFilters as LlamaMetadataFilters,
@@ -171,17 +170,11 @@ async def retrieve(request: RetrieveRequest):
 
         retrieval_top_k = request.top_k * 3 if request.rerank else request.top_k
 
-        if request.mode == SearchMode.HYBRID:
-            retriever = vector_store_manager.get_fusion_retriever(
-                similarity_top_k=retrieval_top_k,
-                filters=llama_filters,
-            )
-        else:
-            retriever = vector_store_manager.get_retriever(
-                similarity_top_k=retrieval_top_k,
-                filters=llama_filters,
-                mode=internal_mode,
-            )
+        retriever = vector_store_manager.get_retriever(
+            similarity_top_k=retrieval_top_k,
+            filters=llama_filters,
+            mode=internal_mode,
+        )
 
         nodes = retriever.retrieve(request.query)
         log_info("Initial retrieval completed", node_count=len(nodes))
