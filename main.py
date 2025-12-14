@@ -178,15 +178,24 @@ async def get_document_count():
         }
 
     except Exception as e:
-        log_exception(
-            "Document count failed",
-            error_type=type(e).__name__,
-            error_message=str(e),
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve document count",
-        )
+        error_type = type(e).__name__
+
+        if error_type == "UndefinedTableError":
+            log_info("Table does not exist yet, returning count of 0")
+            return {
+                "total_documents": 0,
+                "status": "table_not_initialized",
+            }
+        else:
+            log_exception(
+                "Document count failed",
+                error_type=error_type,
+                error_message=str(e),
+            )
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to retrieve document count",
+            )
 
 
 @app.post(
