@@ -9,6 +9,7 @@ from models import (
     QueryRequest,
     QueryResponse,
     NodeResponse,
+    CountResponse,
     HealthResponse,
 )
 from llama_index.core.vector_stores.types import (
@@ -38,7 +39,6 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.api_title,
     version=settings.api_version,
-    description=settings.api_description,
     lifespan=lifespan,
     root_path="/query-service",
 )
@@ -146,7 +146,7 @@ async def health_check():
         )
 
 
-@app.get("/count", tags=["Counts"], dependencies=[Depends(verify_api_token)])
+@app.get("/count", response_model=CountResponse, tags=["Counts"], dependencies=[Depends(verify_api_token)])
 async def get_document_count():
     try:
         log_info("Document count request received")
